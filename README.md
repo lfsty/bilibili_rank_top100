@@ -14,4 +14,4 @@
 
 4. requests
 
-5.Chrome浏览器与chromedrive.exe（需配置环境变量）
+5. Chrome浏览器与chromedrive.exe（需配置环境变量）
