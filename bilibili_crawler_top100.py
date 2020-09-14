@@ -5,35 +5,21 @@ import pandas
 import requests
 import re
 import time
+import sys
 import os
+from bilibili_api import video
+from tqdm import tqdm
 
 url_rank = "https://www.bilibili.com/ranking"
 url_login = "https://passport.bilibili.com/login"
 path = "./"
 data = df([])
-rank = []
-href = []
-title = []
-play = []
-danmu_num = []
-author = []
-danmu = []
-cid = []
 
-#获得视频的chatid
-def getCid(url):
-    global browser
-    browser.get(url)
-    time.sleep(1)
-    source = browser.page_source.encode('utf-8')
-    soup = BeautifulSoup(source,'html.parser')
-    tmp = ""
-    pattern = re.compile(r"/[0-9]{9}/")#匹配cid
-    items = soup.find_all("script")
-    for item in items:
-        tmp += str(item)
-    chatid = pattern.search(tmp).group(0)
-    return chatid[1:10]
+#从视频链接中提取BV号
+def getBvid(url):
+    bvid_pattern = re.compile(r"BV[0-9a-zA-Z]{10}")
+    bvid = bvid_pattern.search(url).group(0)
+    return bvid
 
 #获得对应chatid的弹幕
 def getDanmu(chatid):
@@ -49,62 +35,62 @@ def getDanmu(chatid):
         danmu.append(item.text)
     return danmu
 
-#打印进度条
-def progress(t):
-    print("\r%02d%%"%(t+1),end = '')
+#获得视频信息的字典
+def getInfo(url,rank):
+    bvid = getBvid(url)
+    video_info = video.get_video_info(bvid=bvid)
+    #获取视频cid
+    cid = video_info["cid"]
+    #弹幕
+    danmu = getDanmu(cid)
+    #标题
+    title = video_info["title"]
+    #播放量
+    play = video_info["stat"]["view"]
+    #弹幕数量
+    danmu_num = video_info["stat"]["danmaku"]
+    #作者
+    author = video_info["owner"]["name"]
+    info = {"排名":rank,"标题":title,"链接":url,"播放量":play,"弹幕数量":danmu_num,"作者":author,"ChatId":cid,"弹幕":danmu}
+    return info
+
 
 browser = webdriver.Chrome()
+browser.implicitly_wait(1)
 
 browser.get(url_login)
-print("请登录您的账号")
-os.system("pause")
+input("请在弹出的浏览器中登录您的账号，再返回按回车键继续")
+if browser.current_url == url_login:
+    print("登录失败，程序退出")
+    sys.exit()
+else:
+    print("登录成功")
+
+time.sleep(5)
+os.system("cls")
 
 browser.get(url_rank)
 source = browser.page_source.encode("utf-8")
 
 soup = BeautifulSoup(source,'html.parser')
 items = soup.find_all(class_='rank-item')
-
-t = 0
+print("爬取视频信息中...")
+pbar = tqdm(total=100)
 
 #获取排行榜信息
 for item in items:
     #排名
-    rank.append(item.get('data-rank'))
+    rank = item.get("data-rank")
     infos = item.find_all(class_='info')
     for info in infos:
         #超链接和标题的class
         hrefs_titles = info.find_all(class_="title")
         for href_title in hrefs_titles:
             #超链接
-            url_tmp = href_title.get('href')
-            href.append(url_tmp)
-            #获取视频cid
-            cid_tmp = getCid(url_tmp)
-            cid.append(cid_tmp)
-            danmu.append(getDanmu(cid_tmp))
-            #标题
-            title.append(href_title.text)
+            url_video = href_title.get('href')
+            info = getInfo(url=url_video,rank = rank)
+            data = data.append(info,ignore_index=True)
+            pbar.update(1)
 
-            progress(t)
-            t += 1
-
-        #播放量，弹幕量，作者的class
-        details = info.find_all(class_='detail')
-        for detail in details:
-            plays_danmunum_authors = detail.find_all(class_='data-box')
-            for i,play_danmunum_author in enumerate(plays_danmunum_authors):
-                if i == 0:
-                    play.append(play_danmunum_author.text)
-                elif i == 1:
-                    danmu_num.append(play_danmunum_author.text)
-                elif i == 2:
-                    author.append(play_danmunum_author.text)
-                else:
-                    continue
-
-for i in range(100):
-    tmp = {"排名":rank[i],"标题":title[i],"链接":href[i],"播放量":play[i],"弹幕数量":danmu_num[i],"作者":author[i],"ChatId":cid[i],"弹幕":danmu[i]}
-    data = data.append(tmp,ignore_index=True)
 data.to_csv(path+"bilbili_top100.csv")
 browser.close()
