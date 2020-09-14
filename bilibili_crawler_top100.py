@@ -91,6 +91,10 @@ for item in items:
             info = getInfo(url=url_video,rank = rank)
             data = data.append(info,ignore_index=True)
             pbar.update(1)
-
+pbar.close()
+print("信息爬取完毕...")
+print("存储为csv文件...")
 data.to_csv(path+"bilbili_top100.csv")
+print("文件存储完毕...")
 browser.close()
+print("程序退出")
