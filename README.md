@@ -15,3 +15,5 @@
 4. requests
 
 5. Chrome浏览器与chromedrive.exe（需配置环境变量）
+
+6. bilibili_api(https://github.com/Passkou/bilibili_api)
