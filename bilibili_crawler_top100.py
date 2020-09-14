@@ -68,13 +68,13 @@ else:
 
 time.sleep(5)
 os.system("cls")
+print("爬取视频信息中...")
 
 browser.get(url_rank)
 source = browser.page_source.encode("utf-8")
 
 soup = BeautifulSoup(source,'html.parser')
 items = soup.find_all(class_='rank-item')
-print("爬取视频信息中...")
 pbar = tqdm(total=100)
 
 #获取排行榜信息
