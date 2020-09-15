@@ -14,6 +14,10 @@ path_img_result = "./output/bilibili_img_result.jpg"
 path_font = './Font/Adobe-FangSong-Std-R-2.otf'
 path_hist = "./output/bilibili_sentiment_hist.jpg"
 
+folder = os.path.exists("./output")
+if not folder:
+    os.makedirs("./output")
+
 data = pd.read_csv(path_data)
 danmu = ""
 
