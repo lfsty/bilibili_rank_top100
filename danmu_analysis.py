@@ -8,12 +8,11 @@ from snownlp import SnowNLP
 from tqdm import tqdm
 import os
 
-path_data = "./bilbili_top100.csv"
-path_img = "./bilibili_img.jpg"
-path_img_result = "./bilibili_img_result.jpg"
-#添加自己的本地中文字体地址，否则中文会乱码
-path_font = ''
-path_hist = "./bilibili_sentiment_hist.jpg"
+path_data = "./data/bilbili_top100.csv"
+path_img = "./data/bilibili_img.jpg"
+path_img_result = "./output/bilibili_img_result.jpg"
+path_font = './Font/Adobe-FangSong-Std-R-2.otf'
+path_hist = "./output/bilibili_sentiment_hist.jpg"
 
 data = pd.read_csv(path_data)
 danmu = ""

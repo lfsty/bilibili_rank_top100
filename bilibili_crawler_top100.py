@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 url_rank = "https://www.bilibili.com/ranking"
 url_login = "https://passport.bilibili.com/login"
-path = "./"
+path = "./data/"
 data = df([])
 
 #从视频链接中提取BV号
