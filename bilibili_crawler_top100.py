@@ -54,47 +54,47 @@ def getInfo(url,rank):
     info = {"排名":rank,"标题":title,"链接":url,"播放量":play,"弹幕数量":danmu_num,"作者":author,"ChatId":cid,"弹幕":danmu}
     return info
 
+if __name__ == '__main__':
+    browser = webdriver.Chrome()
+    browser.implicitly_wait(1)
 
-browser = webdriver.Chrome()
-browser.implicitly_wait(1)
+    browser.get(url_login)
+    input("请在弹出的浏览器中登录您的账号，再返回按回车键继续")
+    if browser.current_url == url_login:
+        print("登录失败，程序退出")
+        sys.exit()
+    else:
+        print("登录成功")
 
-browser.get(url_login)
-input("请在弹出的浏览器中登录您的账号，再返回按回车键继续")
-if browser.current_url == url_login:
-    print("登录失败，程序退出")
-    sys.exit()
-else:
-    print("登录成功")
+    time.sleep(5)
+    os.system("cls")
+    print("爬取视频信息中...")
 
-time.sleep(5)
-os.system("cls")
-print("爬取视频信息中...")
+    browser.get(url_rank)
+    source = browser.page_source.encode("utf-8")
 
-browser.get(url_rank)
-source = browser.page_source.encode("utf-8")
+    soup = BeautifulSoup(source,'html.parser')
+    items = soup.find_all(class_='rank-item')
+    pbar = tqdm(total=100)
 
-soup = BeautifulSoup(source,'html.parser')
-items = soup.find_all(class_='rank-item')
-pbar = tqdm(total=100)
-
-#获取排行榜信息
-for item in items:
-    #排名
-    rank = item.get("data-rank")
-    infos = item.find_all(class_='info')
-    for info in infos:
-        #超链接和标题的class
-        hrefs_titles = info.find_all(class_="title")
-        for href_title in hrefs_titles:
-            #超链接
-            url_video = href_title.get('href')
-            info = getInfo(url=url_video,rank = rank)
-            data = data.append(info,ignore_index=True)
-            pbar.update(1)
-pbar.close()
-print("信息爬取完毕...")
-print("存储为csv文件...")
-data.to_csv(path+"bilbili_top100.csv")
-print("文件存储完毕...")
-browser.close()
-print("程序退出")
+    #获取排行榜信息
+    for item in items:
+        #排名
+        rank = item.get("data-rank")
+        infos = item.find_all(class_='info')
+        for info in infos:
+            #超链接和标题的class
+            hrefs_titles = info.find_all(class_="title")
+            for href_title in hrefs_titles:
+                #超链接
+                url_video = href_title.get('href')
+                info = getInfo(url=url_video,rank = rank)
+                data = data.append(info,ignore_index=True)
+                pbar.update(1)
+    pbar.close()
+    print("信息爬取完毕...")
+    print("存储为csv文件...")
+    data.to_csv(path+"bilbili_top100.csv")
+    print("文件存储完毕...")
+    browser.close()
+    print("程序退出")
